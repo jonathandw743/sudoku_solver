@@ -340,12 +340,100 @@ def is_subset_of(mainset, subset):
 ##        su = fill_in(su, i, j)
 ##        print_2D_array(su)
 
+def is_board_valid(board):
+    for i in range(9):
+        numbers_found = []
+        for j in range(9):
+            number = board[i][j]
+            if len(number) > 1:
+                continue
+            if number[0] in numbers_found:
+                return False
+            numbers_found.append(number[0])
+    for j in range(9):
+        numbers_found = []
+        for j in range(9):
+            number = board[j][i]
+            if len(number) > 1:
+                continue
+            if number[0] in numbers_found:
+                return False
+            numbers_found.append(number[0])
+    for i in range(3):
+        for j in range(3):
+            numbers_found = []
+            for k in range(3):
+                for l in range(3):
+                    number = board[i * 3 + k][j * 3 + l]
+                    if len(number) > 1:
+                        continue
+                    if number[0] in numbers_found:
+                        return False
+                    numbers_found.append(number[0])
+    return True
+
+
+def copy_board(board):
+    new_board = []
+    for i in range(9):
+        new_board.append([])
+        for j in range(9):
+            new_board[i].append([])
+            for n in board[i][j]:
+                new_board[i][j].append(n)
+    return new_board
+
+
+def next_free_space(board):
+    for i in range(9):
+        for j in range(9):
+            if len(board[i][j]) > 1:
+                return (i, j)
+    return None
+
+
+def solve_with_backtracking(board, partial_solve, curr_depth=0):
+    """
+    partially sove for optimisation
+    go to an undefined place
+    set it to 1
+    repeat for 1 to 9 {
+        if it is valid:
+            sol = solve(new_board)
+            if sol is not None:
+                return sol
+        go to next number
+    }
+    return None, its an unsolvable board
+    """
+
+    new_board = partial_solve(board)
+    if new_board is None:
+        return None
+    # printa(new_board)
+    free_space = next_free_space(new_board)
+    if free_space is None:
+        return new_board
+    for number in new_board[free_space[0]][free_space[1]]:
+        new_board_2 = copy_board(new_board)
+        new_board_2[free_space[0]][free_space[1]] = [number]
+        if is_board_valid(new_board_2):
+            solution = solve(new_board_2, curr_depth=curr_depth + 1)
+            if solution is not None:
+                return solution
+    return None
+
+
 su = create_sudoku()
 printa(su)
-solvedsu = solve(su)
+solvedsu_logical = solve(su)
+solvedsu_logical_and_backtracking = solve_with_backtracking(su, solve)
 
-printa(su)
-printa(solvedsu)
+print("solved with logic:")
+printa(solvedsu_logical)
+
+print("solved with logic and backtracking:")
+printa(solvedsu_logical_and_backtracking)
 
 input("press enter to exit")
 
